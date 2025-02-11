@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: evc-custom
+  name: env-custom-rules
   namespace: argocd
 spec:
   syncPolicy:
