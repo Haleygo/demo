@@ -8,7 +8,7 @@ metadata:
     demo.victoriametrics.com/env: "test"
 spec:
   groups:
-    - name: serviceHealth
+    - name: serviceHealth-test
       # tenant: "456"
       params:
         # apply additional label filter "env=test" for all requests
@@ -16,7 +16,7 @@ spec:
           - env=test
       rules:
         # note the `job` filter and update accordingly to your setup
-        - alert: TooHighMemoryUsage-test
+        - alert: TooHighMemoryUsage
           expr: (min_over_time(process_resident_memory_anon_bytes[10m]) / vm_available_memory_bytes) > 0.85
           for: 5m
           labels:
