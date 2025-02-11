@@ -16,8 +16,8 @@ spec:
           - env=prod
       rules:
         # note the `job` filter and update accordingly to your setup
-        - alert: TooHighMemoryUsage
-          expr: (min_over_time(process_resident_memory_anon_bytes[10m]) / vm_available_memory_bytes) > 0.9
+        - alert: TooHighMemoryUsage-prod
+          expr: (min_over_time(process_resident_memory_anon_bytes[10m]) / vm_available_memory_bytes) > 0.8
           for: 5m
           labels:
             severity: critical
