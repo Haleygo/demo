@@ -10,6 +10,7 @@ spec:
   groups:
     - name: serviceHealth
       # tenant: "123"
+      # https://docs.victoriametrics.com/vmalert/#multitenancy
       params:
         # apply additional label filter "env=prod" for all requests
         extra_label:

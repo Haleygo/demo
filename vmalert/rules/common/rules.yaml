@@ -32,7 +32,7 @@ spec:
             description: "`{{ $labels.instance }}` of job `{{ $labels.job }}` has been down for more than 3 minutes."
 
         - alert: ProcessNearFDLimits
-          expr: (process_max_fds {namespace="monitoring"}- process_open_fds{namespace="monitoring"}) < 100
+          expr: (process_max_fds - process_open_fds) < 100
           for: 5m
           labels:
             severity: critical
@@ -43,7 +43,7 @@ spec:
               Consider to increase the limit as fast as possible."
 
         - alert: TooHighMemoryUsage
-          expr: (min_over_time(process_resident_memory_anon_bytes{namespace="monitoring"}[10m]) / vm_available_memory_bytes{namespace="monitoring"}) > 0.8
+          expr: (min_over_time(process_resident_memory_anon_bytes[10m]) / vm_available_memory_bytes) > 0.2
           for: 5m
           labels:
             severity: critical
@@ -56,7 +56,7 @@ spec:
               Consider to either increase available memory or decrease the load on the process."
 
         - alert: TooHighCPUUsage
-          expr: rate(process_cpu_seconds_total{namespace="monitoring"}[5m]) / process_cpu_cores_available{namespace="monitoring"} > 0.9
+          expr: rate(process_cpu_seconds_total[5m]) / process_cpu_cores_available > 0.9
           for: 5m
           labels:
             severity: critical
@@ -82,7 +82,7 @@ spec:
             description: "vmalert pod: {{ $labels.pod }} has incorrect config file"
 
         - alert: AlertingRulesError
-          expr: sum(increase(vmalert_alerting_rules_errors_total{namespace="monitoring"}[5m])) without(alertname, id) > 0
+          expr: sum(increase(vmalert_alerting_rules_errors_total[5m])) without(alertname, id) > 0
           for: 5m
           labels:
             severity: warning
@@ -95,7 +95,7 @@ spec:
               Check vmalert's logs for detailed error message."
 
         - alert: RecordingRulesError
-          expr: sum(increase(vmalert_recording_rules_errors_total{namespace="monitoring"}[5m])) without(recording, id) > 0
+          expr: sum(increase(vmalert_recording_rules_errors_total[5m])) without(recording, id) > 0
           for: 5m
           labels:
             severity: warning
@@ -108,7 +108,7 @@ spec:
               Check vmalert's logs for detailed error message."
 
         - alert: TooManyMissedIterations
-          expr: increase(vmalert_iteration_missed_total{namespace="monitoring"}[5m]) > 0
+          expr: increase(vmalert_iteration_missed_total[5m]) > 0
           for: 15m
           labels:
             severity: warning
@@ -123,7 +123,7 @@ spec:
               If rule expressions are taking longer than expected, please see https://docs.victoriametrics.com/troubleshooting/#slow-queries."
 
         - alert: RemoteWriteErrors
-          expr: increase(vmalert_remotewrite_errors_total{namespace="monitoring"}[5m]) > 0
+          expr: increase(vmalert_remotewrite_errors_total[5m]) > 0
           for: 15m
           labels:
             severity: warning
@@ -135,7 +135,7 @@ spec:
               or recording rules to the configured remote write URL. Check vmalert's logs for detailed error message."
 
         - alert: AlertmanagerErrors
-          expr: increase(vmalert_alerts_send_errors_total{namespace="monitoring"}[5m]) > 0
+          expr: increase(vmalert_alerts_send_errors_total[5m]) > 0
           for: 15m
           labels:
             severity: warning
@@ -152,7 +152,7 @@ spec:
       rules:
 
         - alert: PersistentQueueIsDroppingData
-          expr: sum(increase(vm_persistentqueue_bytes_dropped_total{namespace="monitoring"}[5m])) by (job, instance) > 0
+          expr: sum(increase(vm_persistentqueue_bytes_dropped_total[5m])) by (job, instance) > 0
           for: 10m
           labels:
             severity: critical
@@ -166,7 +166,7 @@ spec:
               on instance {{ $labels.instance }} for the last 10m."
 
         - alert: RejectedRemoteWriteDataBlocksAreDropped
-          expr: sum(increase(vmagent_remotewrite_packets_dropped_total{namespace="monitoring"}[5m])) without (url) > 0
+          expr: sum(increase(vmagent_remotewrite_packets_dropped_total[5m])) without (url) > 0
           for: 15m
           labels:
             severity: warning
@@ -178,7 +178,7 @@ spec:
             remote-write server data blocks. Check the logs to find the reason for rejects."
 
         - alert: TooManyScrapeErrors
-          expr: sum(increase(vm_promscrape_scrapes_failed_total{namespace="monitoring"}[5m])) by (job, instance) > 0
+          expr: sum(increase(vm_promscrape_scrapes_failed_total[5m])) by (job, instance) > 0
           for: 15m
           labels:
             severity: warning
@@ -190,9 +190,9 @@ spec:
 
         - alert: TooManyWriteErrors
           expr: |
-            (sum(increase(vm_ingestserver_request_errors_total{namespace="monitoring"}[5m])) by (job, instance)
+            (sum(increase(vm_ingestserver_request_errors_total[5m])) by (job, instance)
             +
-            sum(increase(vmagent_http_request_errors_total{namespace="monitoring"}[5m])) by (job, instance)) > 0
+            sum(increase(vmagent_http_request_errors_total[5m])) by (job, instance)) > 0
           for: 15m
           labels:
             severity: warning
@@ -203,7 +203,7 @@ spec:
             summary: 'Job "{{ $labels.job }}" on instance {{ $labels.instance }} responds with errors to write requests for last 15m.'
 
         - alert: TooManyRemoteWriteErrors
-          expr: sum(rate(vmagent_remotewrite_retries_count_total{namespace="monitoring"}[5m])) by(job, instance, url) > 0
+          expr: sum(rate(vmagent_remotewrite_retries_count_total[5m])) by(job, instance, url) > 0
           for: 15m
           labels:
             severity: warning
@@ -219,9 +219,9 @@ spec:
         - alert: RemoteWriteConnectionIsSaturated
           expr: |
             (
-            rate(vmagent_remotewrite_send_duration_seconds_total{namespace="monitoring"}[5m])
+            rate(vmagent_remotewrite_send_duration_seconds_total[5m])
             /
-            vmagent_remotewrite_queues{namespace="monitoring"}
+            vmagent_remotewrite_queues
             ) > 0.9
           for: 15m
           labels:
@@ -237,7 +237,7 @@ spec:
               the number of connections per each remote storage."
 
         - alert: PersistentQueueForWritesIsSaturated
-          expr: rate(vm_persistentqueue_write_duration_seconds_total{namespace="monitoring"}[5m]) > 0.9
+          expr: rate(vm_persistentqueue_write_duration_seconds_total[5m]) > 0.9
           for: 15m
           labels:
             severity: warning
@@ -251,7 +251,7 @@ spec:
               In this case, consider to decrease load on the vmagent or improve the disk throughput."
 
         - alert: PersistentQueueForReadsIsSaturated
-          expr: rate(vm_persistentqueue_read_duration_seconds_total{namespace="monitoring"}[5m]) > 0.9
+          expr: rate(vm_persistentqueue_read_duration_seconds_total[5m]) > 0.9
           for: 15m
           labels:
             severity: warning
@@ -266,9 +266,9 @@ spec:
 
         - alert: ConfigurationReloadFailure
           expr: |
-            vm_promscrape_config_last_reload_successful{namespace="monitoring"} != 1
+            vm_promscrape_config_last_reload_successful != 1
             or
-            vmagent_relabel_config_last_reload_successful{namespace="monitoring"} != 1
+            vmagent_relabel_config_last_reload_successful != 1
           labels:
             severity: warning
             instance: "{{ $labels.instance }}"
