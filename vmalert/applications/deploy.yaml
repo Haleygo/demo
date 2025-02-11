@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vm-stack
+  namespace: argocd
+spec:
+  destination:
+    name: in-cluster
+    namespace: vm
+  project: default
+  source:
+    chart: victoria-metrics-k8s-stack
+    repoURL: "https://victoriametrics.github.io/helm-charts"
+    targetRevision: 0.36.1
+    helm:
+      valuesObject:
+        vmsingle:
+          enabled: false
+        vmcluster:
+          enabled: true
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      prune: true

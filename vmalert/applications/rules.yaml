@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: evc-custom
+  namespace: argocd
+spec:
+  syncPolicy:
+    preserveResourcesOnDeletion: false
+  generators:
+    - git:
+        repoURL: "https://github.com/Haleygo/demo/"
+        revision: "main"
+        directories:
+          - path: "vmalert/rules"
+  template:
+    # path[4] will refer to tenant_id extracted from path above
+    # vmalert(0)/rules(1)/**(2)
+    metadata:
+      name: "env-{{path[2]}}-custom"
+      labels:
+        demo.victoriametrics.com/env-2: "{{path[2]}}"
+    spec:
+      project: "default"
+      destination:
+        name: "in-cluster"
+        namespace: "env-{{path[2]}}"
+      source:
+        path: "{{path}}"
+        repoURL: "https://github.com/Haleygo/demo/"
+        targetRevision: "main"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

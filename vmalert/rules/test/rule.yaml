@@ -1,0 +1,26 @@
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: test
+  labels:
+    app.kubernetes.io/component: vmrule
+    demo.victoriametrics.com/env: "test"
+spec:
+  groups:
+    - name: serviceHealth
+      params:
+        extra_label:
+          - env=test
+      rules:
+        # note the `job` filter and update accordingly to your setup
+        - alert: TooManyRestarts-test
+          expr: changes(process_start_time_seconds{job=~".*(victoriametrics|vmselect|vminsert|vmstorage|vmagent|vmalert|vmsingle|vmalertmanager|vmauth).*"}[15m]) > 2
+          labels:
+            severity: critical
+            explore: "https://grafana.grammarly.io/explore?left=%5B%22now-1h%22,%22now%22,%22VM%20external%20monitoring%22,%7B%22expr%22:%22{{$expr|quotesEscape|crlfEscape|queryEscape}}%22,%22exemplar%22:true%7D%5D"
+            dashboard: 'https://grafana.grammarly.io/d/oS7Bi_0Wz/victoriametrics-cluster'
+          annotations:
+            explore: "{{ $labels.job }} too many restarts (instance {{ $labels.instance }})"
+            description: "Job {{ $labels.job }} (instance {{ $labels.instance }}) has restarted more than twice in the last 15 minutes.
+            It might be crashlooping."
