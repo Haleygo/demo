@@ -18,6 +18,8 @@ spec:
           enabled: false
         vmcluster:
           enabled: true
+        defaultRules:
+          create: false
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

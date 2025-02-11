@@ -11,14 +11,14 @@ spec:
         repoURL: "https://github.com/Haleygo/demo/"
         revision: "main"
         directories:
-          - path: "vmalert/rules"
+          - path: "vmalert/rules/**"
   template:
-    # path[4] will refer to tenant_id extracted from path above
+    # path[2] will refer to env name extracted from path above
     # vmalert(0)/rules(1)/**(2)
     metadata:
-      name: "env-{{path[2]}}-custom"
+      name: "rules-{{path[2]}}"
       labels:
-        demo.victoriametrics.com/env-2: "{{path[2]}}"
+        demo.victoriametrics.com/env: "{{path[2]}}"
     spec:
       project: "default"
       destination:
