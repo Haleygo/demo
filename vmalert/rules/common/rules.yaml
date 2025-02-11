@@ -146,34 +146,6 @@ spec:
             description: "vmalert instance {{ $labels.instance }} is failing to send alert notifications to \"{{ $labels.addr }}\".
               Check vmalert's logs for detailed error message."
 
-    - name: alertmanager
-      rules:
-
-        - alert: configReloadError
-          expr: alertmanager_config_last_reload_successful == 0
-          for: 2m
-          labels:
-            severity: error
-            instance: "{{ $labels.instance }}"
-            service: "{{ $labels.job }}"
-          annotations:
-            summary: "alertmanger has errors at config file"
-            description: "alertmanager pod: {{ $labels.pod}} has invalid config"
-
-        - alert: notifierErrors
-          expr: sum(rate(alertmanager_notifications_failed_total[1m])) by (job, pod, integration)  >  0
-          for: 2m
-          labels:
-            resource: "{{ $labels.integration }}"
-            service: "{{ $labels.job }}"
-            severity: warning
-          annotations:
-            summary: "alertmanager failed to send notification via integration"
-            details: "alertmanager pod: {{ $labels.pod}} failed to send notification to the integration: {{ $labels.integration }}, check it's logs"
-
-    # Alerts group for vmagent assumes that Grafana dashboard
-    # https://grafana.com/grafana/dashboards/12683 is installed.
-    # Pls update the `dashboard` annotation according to your setup.
     - name: vmagent
       interval: 30s
       concurrency: 2

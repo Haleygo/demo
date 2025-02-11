@@ -9,13 +9,15 @@ metadata:
 spec:
   groups:
     - name: serviceHealth
+      # tenant: "456"
       params:
+        # apply additional label filter "env=test" for all requests
         extra_label:
           - env=test
       rules:
         # note the `job` filter and update accordingly to your setup
         - alert: TooHighMemoryUsage
-          expr: (min_over_time(process_resident_memory_anon_bytes{env="test"}[10m]) / vm_available_memory_bytes{env="test"}) > 0.9
+          expr: (min_over_time(process_resident_memory_anon_bytes[10m]) / vm_available_memory_bytes) > 0.9
           for: 5m
           labels:
             severity: critical
